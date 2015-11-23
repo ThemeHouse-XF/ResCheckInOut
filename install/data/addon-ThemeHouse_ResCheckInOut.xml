@@ -1,0 +1,994 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="ThemeHouse_ResCheckInOut" title="[⌂] Resource Check In and Out" version_string="1.0.3" version_id="1447261019" url="http://xf.themehouse.io/" install_callback_class="ThemeHouse_Install" install_callback_method="install" uninstall_callback_class="ThemeHouse_Install" uninstall_callback_method="uninstall">
+  <admin_navigation>
+    <navigation navigation_id="checkInOut" parent_navigation_id="applications" display_order="1500" link="" admin_permission_id="" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="checkInOutLocations" parent_navigation_id="checkInOut" display_order="1" link="check-in-out-locations" admin_permission_id="" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="checkInOutPaymentMethods" parent_navigation_id="checkInOut" display_order="10" link="check-in-out-pay-methods" admin_permission_id="" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="resourceConditions" parent_navigation_id="resources" display_order="200" link="resource-conditions" admin_permission_id="" debug_only="0" hide_no_children="0"/>
+  </admin_navigation>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="th_condition_delete_rescheckinout"><![CDATA[<xen:title>{xen:phrase th_confirm_deletion_of_condition_rescheckinout}: {$condition.title}</xen:title>
+
+<xen:h1>{xen:phrase th_confirm_deletion_of_condition_rescheckinout}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'resource-conditions/edit', $condition}">{$condition.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'resource-conditions/delete', $condition}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase th_please_confirm_want_to_delete_condition_rescheckinout}:</p>
+	<strong><a href="{xen:adminlink 'resource-conditions/edit', $condition}">{$condition.title}</a></strong>
+
+	<xen:submitunit save="{xen:phrase th_delete_condition_rescheckinout}" />
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>]]></template>
+    <template title="th_condition_edit_rescheckinout"><![CDATA[<xen:title>{xen:if '{$condition.resource_condition_id}', '{xen:phrase th_edit_condition_rescheckinout}: {$condition.title}', '{xen:phrase th_create_new_condition_rescheckinout}'}</xen:title>
+
+<xen:h1>{xen:if '{$condition.resource_condition_id}', '{xen:phrase th_edit_condition_rescheckinout}: <em>{$condition.title}</em>', '{xen:phrase th_create_new_condition_rescheckinout}'}</xen:h1>
+
+<xen:if is="{$condition.resource_condition_id}">
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink 'resource-conditions'}#{xen:helper listitemid, $condition.resource_condition_id}">{$condition.title}</xen:breadcrumb>
+	</xen:navigation>
+</xen:if>
+
+<xen:form action="{xen:adminlink 'resource-conditions/save', $condition}" class="AutoValidator" data-redirect="on">
+	<xen:textboxunit label="{xen:phrase title}:" name="title" value="{$condition.title}" data-liveTitleTemplate="{xen:if {$condition.resource_condition_id},
+		'{xen:phrase th_edit_condition_rescheckinout}: <em>%s</em>',
+		'{xen:phrase th_create_new_condition_rescheckinout}: <em>%s</em>'}" />
+
+	<xen:submitunit>
+		<input type="submit" name="saveexit" value="{xen:phrase save_and_exit}" accesskey="e" class="button primary" id="saveExitButton" />
+		<input type="submit" name="reload" value="{xen:phrase save_changes}" accesskey="s" class="button" id="saveReloadButton" data-ajaxvalue="{xen:phrase save_all_changes}" />
+		<xen:if is="{$condition.resource_condition_id}">
+			<input type="button" value="{xen:phrase th_delete_condition_rescheckinout}..." accesskey="d" class="button OverlayTrigger"
+				data-href="{xen:adminlink resource-conditions/delete, $condition}" />
+		</xen:if>
+	</xen:submitunit>
+</xen:form>]]></template>
+    <template title="th_condition_list_rescheckinout"><![CDATA[<xen:title>{xen:phrase th_conditions_rescheckinout}</xen:title>
+
+<xen:h1>{xen:phrase th_conditions_rescheckinout}</xen:h1>
+
+<xen:topctrl>
+    <a href="{xen:adminlink 'resource-conditions/add'}" class="button">+ {xen:phrase th_create_new_condition_rescheckinout}</a>
+</xen:topctrl>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+
+<xen:form action="{xen:adminlink 'resource-conditions/toggle'}" class="section AutoValidator">
+
+    <xen:if is="{$conditions}">
+        <h2 class="subHeading">
+            <xen:include template="filter_list_controls" />
+            {xen:phrase th_conditions_rescheckinout}
+        </h2>
+
+        <ol class="FilterList">
+            <xen:foreach loop="$conditions" key="$resourceConditionId" value="$condition">
+                <xen:listitem id="{$resourceConditionId}"
+                    label="{$condition.title}"
+                    snippet=""
+                    href="{xen:adminlink 'resource-conditions/edit', $condition}"
+                    delete="{xen:adminlink 'resource-conditions/delete', $condition}"
+                    deletehint="{xen:phrase delete}">
+                </xen:listitem>
+            </xen:foreach>
+        </ol>
+
+        <p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $conditions}</span>', 'total={xen:count $conditions}'}</p>
+
+    <xen:else />
+        <div class="noResults">{xen:phrase th_there_are_no_conditions_rescheckinout}</div>
+    </xen:if>
+
+</xen:form>]]></template>
+    <template title="th_location_delete_rescheckinout"><![CDATA[<xen:title>{xen:phrase th_confirm_deletion_of_location_rescheckinout}: {$location.title}</xen:title>
+
+<xen:h1>{xen:phrase th_confirm_deletion_of_location_rescheckinout}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'check-in-out-locations/edit', $location}">{$location.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'check-in-out-locations/delete', $location}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase th_please_confirm_want_to_delete_location_rescheckinout}:</p>
+	<strong><a href="{xen:adminlink 'check-in-out-locations/edit', $location}">{$location.title}</a></strong>
+
+	<xen:submitunit save="{xen:phrase th_delete_location_rescheckinout}" />
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>]]></template>
+    <template title="th_location_edit_rescheckinout"><![CDATA[<xen:title>{xen:if '{$location.location_id}', '{xen:phrase th_edit_location_rescheckinout}: {$location.title}', '{xen:phrase th_create_new_location_rescheckinout}'}</xen:title>
+
+<xen:h1>{xen:if '{$location.location_id}', '{xen:phrase th_edit_location_rescheckinout}: <em>{$location.title}</em>', '{xen:phrase th_create_new_location_rescheckinout}'}</xen:h1>
+
+<xen:if is="{$location.location_id}">
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink 'check-in-out-locations'}#{xen:helper listitemid, $location.location_id}">{$location.title}</xen:breadcrumb>
+	</xen:navigation>
+</xen:if>
+
+<xen:form action="{xen:adminlink 'check-in-out-locations/save', $location}" class="AutoValidator" data-redirect="on">
+	<xen:textboxunit label="{xen:phrase title}:" name="title" value="{$location.title}" data-liveTitleTemplate="{xen:if {$location.location_id},
+		'{xen:phrase th_edit_location_rescheckinout}: <em>%s</em>',
+		'{xen:phrase th_create_new_location_rescheckinout}: <em>%s</em>'}" />
+
+	<xen:submitunit>
+		<input type="submit" name="saveexit" value="{xen:phrase save_and_exit}" accesskey="e" class="button primary" id="saveExitButton" />
+		<input type="submit" name="reload" value="{xen:phrase save_changes}" accesskey="s" class="button" id="saveReloadButton" data-ajaxvalue="{xen:phrase save_all_changes}" />
+		<xen:if is="{$location.location_id}">
+			<input type="button" value="{xen:phrase th_delete_location_rescheckinout}..." accesskey="d" class="button OverlayTrigger"
+				data-href="{xen:adminlink check-in-out-locations/delete, $location}" />
+		</xen:if>
+	</xen:submitunit>
+</xen:form>]]></template>
+    <template title="th_location_list_rescheckinout"><![CDATA[<xen:title>{xen:phrase th_check_in_and_out_locations_rescheckinout}</xen:title>
+
+<xen:h1>{xen:phrase th_check_in_and_out_locations_rescheckinout}</xen:h1>
+
+<xen:topctrl>
+    <a href="{xen:adminlink 'check-in-out-locations/add'}" class="button">+ {xen:phrase th_create_new_location_rescheckinout}</a>
+</xen:topctrl>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+
+<xen:form action="{xen:adminlink 'check-in-out-locations/toggle'}" class="section AutoValidator">
+
+    <xen:if is="{$locations}">
+        <h2 class="subHeading">
+            <xen:include template="filter_list_controls" />
+            {xen:phrase th_check_in_and_out_locations_rescheckinout}
+        </h2>
+
+        <ol class="FilterList">
+            <xen:foreach loop="$locations" key="$locationId" value="$location">
+                <xen:listitem id="{$locationId}"
+                    label="{$location.title}"
+                    snippet=""
+                    href="{xen:adminlink 'check-in-out-locations/edit', $location}"
+                    delete="{xen:adminlink 'check-in-out-locations/delete', $location}"
+                    deletehint="{xen:phrase delete}">
+                </xen:listitem>
+            </xen:foreach>
+        </ol>
+
+        <p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $locations}</span>', 'total={xen:count $locations}'}</p>
+
+    <xen:else />
+        <div class="noResults">{xen:phrase th_there_are_no_locations_rescheckinout}</div>
+    </xen:if>
+
+</xen:form>]]></template>
+    <template title="th_payment_method_delete_rescheckinout"><![CDATA[<xen:title>{xen:phrase th_confirm_deletion_of_payment_method_rescheckinout}: {$paymentMethod.title}</xen:title>
+
+<xen:h1>{xen:phrase th_confirm_deletion_of_payment_method_rescheckinout}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'check-in-out-pay-methods/edit', $paymentMethod}">{$paymentMethod.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'check-in-out-pay-methods/delete', $paymentMethod}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase th_please_confirm_want_to_delete_payment_method_rescheckinout}:</p>
+	<strong><a href="{xen:adminlink 'check-in-out-pay-methods/edit', $paymentMethod}">{$paymentMethod.title}</a></strong>
+
+	<xen:submitunit save="{xen:phrase th_delete_payment_method_rescheckinout}" />
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>]]></template>
+    <template title="th_payment_method_edit_rescheckinout"><![CDATA[<xen:title>{xen:if '{$paymentMethod.payment_method_id}', '{xen:phrase th_edit_payment_method_rescheckinout}: {$paymentMethod.title}', '{xen:phrase th_create_new_payment_method_rescheckinout}'}</xen:title>
+
+<xen:h1>{xen:if '{$paymentMethod.payment_method_id}', '{xen:phrase th_edit_payment_method_rescheckinout}: <em>{$paymentMethod.title}</em>', '{xen:phrase th_create_new_payment_method_rescheckinout}'}</xen:h1>
+
+<xen:if is="{$paymentMethod.payment_method_id}">
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink 'check-in-out-pay-methods'}#{xen:helper listitemid, $paymentMethod.payment_method_id}">{$paymentMethod.title}</xen:breadcrumb>
+	</xen:navigation>
+</xen:if>
+
+<xen:form action="{xen:adminlink 'check-in-out-pay-methods/save', $paymentMethod}" class="AutoValidator" data-redirect="on">
+	<xen:textboxunit label="{xen:phrase title}:" name="title" value="{$paymentMethod.title}" data-liveTitleTemplate="{xen:if {$paymentMethod.payment_method_id},
+		'{xen:phrase th_edit_payment_method_rescheckinout}: <em>%s</em>',
+		'{xen:phrase th_create_new_payment_method_rescheckinout}: <em>%s</em>'}" />
+	
+	<xen:if is="{$refundMethods}">
+		<xen:checkboxunit label="{xen:phrase th_alternative_refund_methods_rescheckinout}:" name="refund_method_ids" explain="{xen:phrase th_alternative_refund_methods_explain_rescheckinout}">
+			<xen:foreach loop="$refundMethods" key="$refundMethodId" value="$refundMethod">
+				<xen:option value="{$refundMethodId}" label="{$refundMethod.title}" selected="in_array({$refundMethodId}, {$paymentMethod.refundMethodIds})" />
+			</xen:foreach>
+		</xen:checkboxunit>
+	</xen:if>
+
+	<xen:submitunit>
+		<input type="submit" name="saveexit" value="{xen:phrase save_and_exit}" accesskey="e" class="button primary" id="saveExitButton" />
+		<input type="submit" name="reload" value="{xen:phrase save_changes}" accesskey="s" class="button" id="saveReloadButton" data-ajaxvalue="{xen:phrase save_all_changes}" />
+		<xen:if is="{$paymentMethod.payment_method_id}">
+			<input type="button" value="{xen:phrase th_delete_payment_method_rescheckinout}..." accesskey="d" class="button OverlayTrigger"
+				data-href="{xen:adminlink check-in-out-pay-methods/delete, $paymentMethod}" />
+		</xen:if>
+	</xen:submitunit>
+</xen:form>]]></template>
+    <template title="th_payment_method_list_rescheckinout"><![CDATA[<xen:title>{xen:phrase th_check_in_and_out_payment_methods_rescheckinout}</xen:title>
+
+<xen:h1>{xen:phrase th_check_in_and_out_payment_methods_rescheckinout}</xen:h1>
+
+<xen:topctrl>
+    <a href="{xen:adminlink 'check-in-out-pay-methods/add'}" class="button">+ {xen:phrase th_create_new_payment_method_rescheckinout}</a>
+</xen:topctrl>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+
+<xen:form action="{xen:adminlink 'check-in-out-pay-methods/toggle'}" class="section AutoValidator">
+
+    <xen:if is="{$paymentMethods}">
+        <h2 class="subHeading">
+            <xen:include template="filter_list_controls" />
+            {xen:phrase th_check_in_and_out_payment_methods_rescheckinout}
+        </h2>
+
+        <ol class="FilterList">
+            <xen:foreach loop="$paymentMethods" key="$paymentMethodId" value="$paymentMethod">
+                <xen:listitem id="{$paymentMethodId}"
+                    label="{$paymentMethod.title}"
+                    snippet=""
+                    href="{xen:adminlink 'check-in-out-pay-methods/edit', $paymentMethod}"
+                    delete="{xen:adminlink 'check-in-out-pay-methods/delete', $paymentMethod}"
+                    deletehint="{xen:phrase delete}">
+                </xen:listitem>
+            </xen:foreach>
+        </ol>
+
+        <p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $paymentMethods}</span>', 'total={xen:count $paymentMethods}'}</p>
+
+    <xen:else />
+        <div class="noResults">{xen:phrase th_there_are_no_payment_methods_rescheckinout}</div>
+    </xen:if>
+
+</xen:form>]]></template>
+  </admin_templates>
+  <admin_template_modifications/>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="container_public_params" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_ContainerPublicParams" callback_method="containerPublicParams" active="1" hint="" description=""/>
+    <listener event_id="controller_pre_dispatch" execute_order="10" callback_class="ThemeHouse_Listener_ControllerPreDispatch" callback_method="controllerPreDispatch" active="1" hint="" description=""/>
+    <listener event_id="file_health_check" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_FileHealthCheck" callback_method="fileHealthCheck" active="1" hint="" description=""/>
+    <listener event_id="init_dependencies" execute_order="10" callback_class="ThemeHouse_Listener_InitDependencies" callback_method="initDependencies" active="1" hint="" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassRoutePrefix" active="0" hint="XenResource_Route_Prefix_Resources" description="XenResource_Route_Prefix_Resources (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassModel" active="0" hint="XenForo_Model_User" description="XenForo_Model_User (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassVisitor" active="0" hint="XenForo_Visitor" description="XenForo_Visitor (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassHelper" active="0" hint="XenResource_ControllerHelper_Resource" description="XenResource_ControllerHelper_Resource (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassController" active="0" hint="XenResource_ControllerPublic_Resource" description="XenResource_ControllerPublic_Resource (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassModel" active="0" hint="XenResource_Model_Resource" description="XenResource_Model_Resource (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassDataWriter" active="0" hint="XenResource_DataWriter_Resource" description="XenResource_DataWriter_Resource (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassController" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+    <listener event_id="load_class_datawriter" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassDataWriter" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+    <listener event_id="load_class_helper" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassHelper" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassModel" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+    <listener event_id="load_class_route_prefix" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassRoutePrefix" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+    <listener event_id="load_class_visitor" execute_order="10" callback_class="ThemeHouse_ResCheckInOut_Listener_LoadClass" callback_method="loadClassVisitor" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+  </code_event_listeners>
+  <cron>
+    <entry entry_id="th_resCheckInRemind" cron_class="ThemeHouse_ResCheckInOut_CronEntry_Reminders" cron_method="sendReminderAlerts" active="1"><![CDATA[{"day_type":"dom","dom":["-1"],"hours":["-1"],"minutes":["5"]}]]></entry>
+  </cron>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <group group_id="th_resCheckInOut" display_order="2000" debug_only="0"/>
+    <option option_id="th_resCheckInOut_defaultDueDays" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
+      <default_value>7</default_value>
+      <edit_format_params/>
+      <sub_options/>
+      <relation group_id="th_resCheckInOut" display_order="1"/>
+    </option>
+    <option option_id="th_resCheckInOut_reminderAlertsUser" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>1,0,-1,-7</default_value>
+      <edit_format_params/>
+      <sub_options/>
+      <relation group_id="th_resCheckInOut" display_order="100"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions>
+      <permission permission_group_id="general" permission_id="checkInOutAsUser" permission_type="flag" default_value="unset" interface_group_id="resourcePermissions" display_order="505"/>
+      <permission permission_group_id="resource" permission_id="checkIn" permission_type="flag" depend_permission_id="viewCheckOut" default_value="unset" interface_group_id="resourcePermissions" display_order="515"/>
+      <permission permission_group_id="resource" permission_id="checkOut" permission_type="flag" default_value="unset" interface_group_id="resourcePermissions" display_order="510"/>
+      <permission permission_group_id="resource" permission_id="viewCheckOut" permission_type="flag" default_value="unset" interface_group_id="resourcePermissions" display_order="500"/>
+    </permissions>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="admin_navigation_checkInOut" version_id="1422115966" version_string="1.0.0"><![CDATA[Check In and Out]]></phrase>
+    <phrase title="admin_navigation_checkInOutLocations" version_id="1422115966" version_string="1.0.0"><![CDATA[Locations]]></phrase>
+    <phrase title="admin_navigation_checkInOutPaymentMethods" version_id="1422552744" version_string="1.0.0"><![CDATA[Payment Methods]]></phrase>
+    <phrase title="admin_navigation_resourceConditions" version_id="1422115966" version_string="1.0.0"><![CDATA[Resource Conditions]]></phrase>
+    <phrase title="cron_entry_th_resCheckInRemind" version_id="1423155128" version_string="1.0.0"><![CDATA[Send Check In Reminders]]></phrase>
+    <phrase title="option_group_th_resCheckInOut" version_id="1422894127" version_string="1.0.0"><![CDATA[Resource Check In and Out by ThemeHouse]]></phrase>
+    <phrase title="option_group_th_resCheckInOut_description" version_id="1422894127" version_string="1.0.0"><![CDATA[Options for the Resource Check In and Out by ThemeHouse add-on.]]></phrase>
+    <phrase title="option_th_resCheckInOut_defaultDueDays" version_id="1422894127" version_string="1.0.0"><![CDATA[Default Check Out Period (Days)]]></phrase>
+    <phrase title="option_th_resCheckInOut_defaultDueDays_explain" version_id="1422894127" version_string="1.0.0"><![CDATA[This is the number of days that will be added to the current date to make the default due date when checking out an add-on.]]></phrase>
+    <phrase title="option_th_resCheckInOut_reminderAlertsUser" version_id="1423155128" version_string="1.0.0"><![CDATA[Reminder days]]></phrase>
+    <phrase title="option_th_resCheckInOut_reminderAlertsUser_explain" version_id="1423155128" version_string="1.0.0"><![CDATA[Enter the days before and after the due date on which you would like to send reminder alerts to the user who has checked out a resource. Separate entries by a comma. For days after the due date, enter as a negative number.]]></phrase>
+    <phrase title="permission_general_checkInOutAsUser" version_id="1422894127" version_string="1.0.0"><![CDATA[Check in and out as different user]]></phrase>
+    <phrase title="permission_resource_checkIn" version_id="1422552744" version_string="1.0.0"><![CDATA[Check in resources]]></phrase>
+    <phrase title="permission_resource_checkOut" version_id="1422552744" version_string="1.0.0"><![CDATA[Check out resources]]></phrase>
+    <phrase title="permission_resource_viewCheckOut" version_id="1422894127" version_string="1.0.0"><![CDATA[View check out details]]></phrase>
+    <phrase title="resource_check_out" version_id="1425051545" version_string="1.0.1"><![CDATA[Check Out]]></phrase>
+    <phrase title="th_alternative_refund_methods_explain_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Note: the payment method used is always available as a refund payment method.]]></phrase>
+    <phrase title="th_alternative_refund_methods_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Alternative Refund Methods]]></phrase>
+    <phrase title="th_availability_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Availability]]></phrase>
+    <phrase title="th_available_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Available]]></phrase>
+    <phrase title="th_by_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[By]]></phrase>
+    <phrase title="th_change_check_in_and_out_user_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Change Check In and Out User]]></phrase>
+    <phrase title="th_checked_in_by_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Checked in by]]></phrase>
+    <phrase title="th_checked_in_by_x_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Checked in by {name}]]></phrase>
+    <phrase title="th_checked_in_from_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Checked in from]]></phrase>
+    <phrase title="th_checked_in_from_x_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Checked in from {name}]]></phrase>
+    <phrase title="th_checked_out_by_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Checked out by]]></phrase>
+    <phrase title="th_checked_out_by_x_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Checked out by {name}]]></phrase>
+    <phrase title="th_checked_out_to_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Checked out to]]></phrase>
+    <phrase title="th_checked_out_to_x_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Checked out to {name}]]></phrase>
+    <phrase title="th_check_ins_and_outs_display_options_rescheckinout" version_id="1425482937" version_string="1.0.2"><![CDATA[Check Ins and Outs Display Options]]></phrase>
+    <phrase title="th_check_ins_and_outs_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Check Ins and Outs]]></phrase>
+    <phrase title="th_check_in_and_out_as_user_chooser_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Check In and Out as User Chooser]]></phrase>
+    <phrase title="th_check_in_and_out_as_x_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Check In and Out as {name}]]></phrase>
+    <phrase title="th_check_in_and_out_locations_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Check In and Out Locations]]></phrase>
+    <phrase title="th_check_in_and_out_payment_methods_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Check In and Out Payment Methods]]></phrase>
+    <phrase title="th_check_in_date_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Check In Date]]></phrase>
+    <phrase title="th_check_in_location_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Check In Location]]></phrase>
+    <phrase title="th_check_in_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Check In]]></phrase>
+    <phrase title="th_check_in_resource_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Check In Resource]]></phrase>
+    <phrase title="th_check_outs_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Check Outs]]></phrase>
+    <phrase title="th_check_out_date_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Check Out Date]]></phrase>
+    <phrase title="th_check_out_location_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Check Out Location]]></phrase>
+    <phrase title="th_check_out_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Check Out]]></phrase>
+    <phrase title="th_check_out_resource_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Check Out Resource]]></phrase>
+    <phrase title="th_conditions_rescheckinout" version_id="1422115966" version_string="1.0.0"><![CDATA[Conditions]]></phrase>
+    <phrase title="th_condition_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Condition]]></phrase>
+    <phrase title="th_confirm_deletion_of_condition_rescheckinout" version_id="1422115966" version_string="1.0.0"><![CDATA[Confirm Deletion of Condition]]></phrase>
+    <phrase title="th_confirm_deletion_of_location_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Confirm Deletion of Location]]></phrase>
+    <phrase title="th_confirm_deletion_of_payment_method_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Confirm Deletion of Payment Method]]></phrase>
+    <phrase title="th_create_new_condition_rescheckinout" version_id="1422115966" version_string="1.0.0"><![CDATA[Create New Condition]]></phrase>
+    <phrase title="th_create_new_location_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Create New Location]]></phrase>
+    <phrase title="th_create_new_payment_method_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Create New Payment Method]]></phrase>
+    <phrase title="th_delete_condition_rescheckinout" version_id="1422115966" version_string="1.0.0"><![CDATA[Delete Condition]]></phrase>
+    <phrase title="th_delete_location_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Delete Location]]></phrase>
+    <phrase title="th_delete_payment_method_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Delete Payment Method]]></phrase>
+    <phrase title="th_deposit_amount_rescheckinout" version_id="1423154279" version_string="1.0.0"><![CDATA[Deposit Amount]]></phrase>
+    <phrase title="th_deposit_payment_method_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Deposit Payment Method]]></phrase>
+    <phrase title="th_deposit_refund_amount_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Deposit Refund Amount]]></phrase>
+    <phrase title="th_deposit_refund_method_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Deposit Refund Method]]></phrase>
+    <phrase title="th_deposit_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Deposit]]></phrase>
+    <phrase title="th_due_date_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Due Date]]></phrase>
+    <phrase title="th_edit_condition_rescheckinout" version_id="1422115966" version_string="1.0.0"><![CDATA[Edit Condition]]></phrase>
+    <phrase title="th_edit_location_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Edit Location]]></phrase>
+    <phrase title="th_edit_payment_method_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Edit Payment Method]]></phrase>
+    <phrase title="th_fee_amount_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Fee Amount]]></phrase>
+    <phrase title="th_fee_payment_method_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Fee Payment Method]]></phrase>
+    <phrase title="th_fee_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Fee]]></phrase>
+    <phrase title="th_location_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Location]]></phrase>
+    <phrase title="th_more_recently_than_rescheckinout" version_id="1425051545" version_string="1.0.1"><![CDATA[More recently than]]></phrase>
+    <phrase title="th_payment_method_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Payment Method]]></phrase>
+    <phrase title="th_please_confirm_want_to_delete_condition_rescheckinout" version_id="1422115966" version_string="1.0.0"><![CDATA[Please confirm that you want to delete the following condition]]></phrase>
+    <phrase title="th_please_confirm_want_to_delete_location_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Please confirm that you want to delete the following location]]></phrase>
+    <phrase title="th_please_confirm_want_to_delete_payment_method_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Please confirm that you want to delete the following payment method]]></phrase>
+    <phrase title="th_refund_amount_must_be_no_more_than_deposit_amount_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Refund amount must be no more than the deposit amount.]]></phrase>
+    <phrase title="th_refund_method_not_allowed_for_this_payment_method_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[The selected refund method is not allowed to be used for this payment method.]]></phrase>
+    <phrase title="th_resources_checked_out_by_x_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Resources Check Out by {name}]]></phrase>
+    <phrase title="th_resource_check_out_rescheckinout" version_id="1425051545" version_string="1.0.1"><![CDATA[Resource Check Out]]></phrase>
+    <phrase title="th_resource_condition_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[Resource Condition]]></phrase>
+    <phrase title="th_search_check_outs_rescheckinout" version_id="1425051545" version_string="1.0.1"><![CDATA[Search Check Outs]]></phrase>
+    <phrase title="th_show_all_check_ins_and_outs_rescheckinout" version_id="1425482937" version_string="1.0.2"><![CDATA[Show all check ins and outs]]></phrase>
+    <phrase title="th_show_only_check_ins_and_outs_rescheckinout" version_id="1425482937" version_string="1.0.2"><![CDATA[Show only check ins and outs]]></phrase>
+    <phrase title="th_there_are_no_conditions_rescheckinout" version_id="1422115966" version_string="1.0.0"><![CDATA[There are no conditions.]]></phrase>
+    <phrase title="th_there_are_no_locations_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[There are no locations.]]></phrase>
+    <phrase title="th_there_are_no_payment_methods_rescheckinout" version_id="1422552744" version_string="1.0.0"><![CDATA[There are no payment methods.]]></phrase>
+    <phrase title="th_there_no_check_ins_or_outs_to_display_rescheckinout" version_id="1425482937" version_string="1.0.2"><![CDATA[There are no check ins or outs to display.]]></phrase>
+    <phrase title="th_to_from_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[To/From]]></phrase>
+    <phrase title="th_unavailable_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Unavailable]]></phrase>
+    <phrase title="th_user_details_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[User Details]]></phrase>
+    <phrase title="th_user_has_not_checked_out_any_resources_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[This user has not checked out any resources.]]></phrase>
+    <phrase title="th_viewing_resource_check_outs_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[Viewing Resource Check Outs]]></phrase>
+    <phrase title="th_x_is_due_in_one_day_rescheckinout" version_id="1423155128" version_string="1.0.0"><![CDATA[{title} is due in 1 day.]]></phrase>
+    <phrase title="th_x_is_due_in_y_days_rescheckinout" version_id="1423155128" version_string="1.0.0"><![CDATA[{title} is due in {days} days.]]></phrase>
+    <phrase title="th_x_is_due_today_rescheckinout" version_id="1423155128" version_string="1.0.0"><![CDATA[{title} is due today.]]></phrase>
+    <phrase title="th_x_is_late_by_one_day_rescheckinout" version_id="1423155128" version_string="1.0.0"><![CDATA[{title} is late by 1 day.]]></phrase>
+    <phrase title="th_x_is_late_by_y_days_rescheckinout" version_id="1423155128" version_string="1.0.0"><![CDATA[{title} is late by {days} days.]]></phrase>
+  </phrases>
+  <route_prefixes>
+    <route_type type="admin">
+      <prefix original_prefix="check-in-out-locations" class="ThemeHouse_ResCheckInOut_Route_PrefixAdmin_CheckInOutLocations" build_link="data_only"/>
+      <prefix original_prefix="check-in-out-pay-methods" class="ThemeHouse_ResCheckInOut_Route_PrefixAdmin_CheckInOutPaymentMethods" build_link="data_only"/>
+      <prefix original_prefix="resource-conditions" class="ThemeHouse_ResCheckInOut_Route_PrefixAdmin_ResourceConditions" build_link="data_only"/>
+    </route_type>
+  </route_prefixes>
+  <style_properties/>
+  <templates>
+    <template title="alert_resource_check_out_reminder" version_id="1423155128" version_string="1.0.0"><![CDATA[<xen:if is="{$days} > 1">
+	{xen:phrase th_x_is_due_in_y_days_rescheckinout,
+		'title=<a href="{xen:link resources, $content.resource}" class="PopupItemLink">{xen:helper resourcePrefix, $content.resource}{$content.resource.title}</a>',
+		'days={$days}'}
+<xen:elseif is="{$days} == 1" />
+	{xen:phrase th_x_is_due_in_one_day_rescheckinout,
+		'title=<a href="{xen:link resources, $content.resource}" class="PopupItemLink">{xen:helper resourcePrefix, $content.resource}{$content.resource.title}</a>'}
+<xen:elseif is="{$days} == 0" />
+	{xen:phrase th_x_is_due_today_rescheckinout,
+		'title=<a href="{xen:link resources, $content.resource}" class="PopupItemLink">{xen:helper resourcePrefix, $content.resource}{$content.resource.title}</a>'}
+<xen:elseif is="{$days} == -1" />
+	{xen:phrase th_x_is_late_by_one_day_rescheckinout,
+		'title=<a href="{xen:link resources, $content.resource}" class="PopupItemLink">{xen:helper resourcePrefix, $content.resource}{$content.resource.title}</a>'}
+<xen:else />
+	{xen:phrase th_x_is_late_by_y_days_rescheckinout,
+		'title=<a href="{xen:link resources, $content.resource}" class="PopupItemLink">{xen:helper resourcePrefix, $content.resource}{$content.resource.title}</a>',
+		'days={$days}'}
+</xen:if>]]></template>
+    <template title="search_form_resource_check_out" version_id="1425051545" version_string="1.0.1"><![CDATA[<xen:title>{xen:phrase th_search_check_outs_rescheckinout}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:link full:search}">{xen:phrase search}</xen:breadcrumb>
+</xen:navigation>
+
+<form action="{xen:link 'search/search'}" method="post" class="xenForm AutoValidator"
+	data-optInOut="optIn"
+	data-redirect="true">
+
+	<xen:include template="search_form_tabs" />
+
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_keywords">{xen:phrase keywords}:</label></dt>
+		<dd>
+			<ul>
+				<li><input type="search" name="keywords" value="{$search.keywords}" results="0" class="textCtrl" id="ctrl_keywords" autofocus="true" /></li>
+				<input type="hidden" name="title_only" value="1" />
+			</ul>
+		</dd>
+	</dl>
+
+	<fieldset>
+		<dl class="ctrlUnit">
+			<dt><label for="ctrl_users">{xen:phrase th_checked_out_to_rescheckinout}:</label></dt>
+			<dd>
+				<input type="text" name="users" value="{$search.users}" class="textCtrl AutoComplete" id="ctrl_users" />
+				<p class="explain">{xen:phrase separate_names_with_comma}</p>
+			</dd>
+		</dl>
+	</fieldset>
+
+	<fieldset>
+		<dl class="ctrlUnit">
+			<dt><label for="ctrl_date">{xen:phrase th_more_recently_than_rescheckinout}:</label></dt>
+			<dd>
+				<input type="date" name="date" value="{$search.date}" class="textCtrl" id="ctrl_date" />
+			</dd>
+		</dl>
+	</fieldset>
+
+	<xen:if is="{$supportsRelevance}">
+		<dl class="ctrlUnit">
+			<dt><label>{xen:phrase order_by}:</label></dt>
+			<dd>
+				<ul>
+					<li><label for="ctrl_order_date"><input type="radio" name="order" id="ctrl_order_date" value="date" {xen:checked '{$search.order} == "date"'} /> {xen:phrase most_recent}</label></li>
+					<li><label for="ctrl_order_relevance"><input type="radio" name="order" id="ctrl_order_relevance" value="relevance" {xen:checked '{$search.order} == "relevance"'} /> {xen:phrase relevance}</label></li>
+				</ul>
+			</dd>
+		</dl>
+	<xen:else />
+		<input type="hidden" name="order" value="date" />
+	</xen:if>
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd><input type="submit" value="{xen:phrase search}" accesskey="s" class="button primary" /></dd>
+	</dl>
+
+	<input type="hidden" name="type" value="resource_check_out" />
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>]]></template>
+    <template title="search_result_resource_check_out" version_id="1425051545" version_string="1.0.1"><![CDATA[<li id="resource_check_out-{$checkOut.resource_check_out_id}" class="searchResult resourceCheckOut primaryContent" data-author="{$resource.username}">
+
+	<div class="listBlock posterAvatar"><xen:avatar user="$checkOutToUser" size="s" img="true" /></div>
+
+	<div class="listBlock main">
+		<div class="titleText">
+			<span class="contentType">{xen:phrase th_resource_check_out_rescheckinout}</span>
+			<h3 class="title">
+				<a href="{xen:link resources, $resource}">{xen:helper resourcePrefix, $resource}{xen:helper highlight, $resource.title, $search.search_query, 'highlight'}</a> 
+			</h3>
+		</div>
+
+		<div class="meta">
+			<xen:if is="{$enableInlineMod} AND {$resource.canInlineMod}"><input type="checkbox" name="resources[]" value="{$resource.resource_id}" class="InlineModCheck" id="inlineModCheck-resource-{$resource.resource_id}" data-target="#resource-{$resource.resource_id}" title="{xen:phrase select_resource}: {$resource.title}" /></xen:if>
+			{xen:phrase th_checked_out_to_rescheckinout}: <xen:username user="{$checkOutToUser}" />
+			{xen:phrase th_by_rescheckinout}: <xen:username user="{$checkOutUser}" />, {$checkOut.check_out_date},
+			<xen:if is="{$checkOut.check_in_user_id}">
+				{xen:phrase th_checked_in_from_rescheckinout}: <xen:username user="{$checkInFromUser}" />
+				{xen:phrase th_by_rescheckinout}: <xen:username user="{$checkInUser}" />, {$checkOut.check_in_date},
+			</xen:if>
+			{xen:phrase in_category}: <a href="{xen:link resources/categories, $resource}">{$resource.category_title}</a>
+		</div>
+	</div>
+</li>]]></template>
+    <template title="th_check_in_out_as_user_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[<xen:title>{xen:phrase th_change_check_in_and_out_user_rescheckinout}</xen:title>
+
+<form method="post" action="{xen:link resources/check-outs/check-in-out-as-user}" class="xenForm formOverlay" data-redirect="on">
+
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_username">{xen:phrase user_name}:</label></dt>
+		<dd>
+			<input type="text" name="username" id="ctrl_username" value="{$username}" class="textCtrl AutoComplete AcSingle" />
+		</dd>
+	</dl>
+	
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd>
+			<input type="submit" value="{xen:phrase th_change_check_in_and_out_user_rescheckinout}" accesskey="s" class="button primary" />
+		</dd>
+	</dl>
+
+	<input type="hidden" name="redirect" value="{xen:if $redirect, $redirect, $requestPaths.requestUri}" />
+	<input type="hidden" name="_xfConfirm" value="1" />
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>]]></template>
+    <template title="th_resource_check_ins_and_outs_rescheckinout" version_id="1425482937" version_string="1.0.2"><![CDATA[<xen:title>{xen:helper resourcePrefix, $resource, escaped}{$resource.title} - {xen:phrase th_check_ins_and_outs_rescheckinout}</xen:title>
+
+<xen:require css="resource_view.css" />
+
+<xen:container var="$head.canonical">
+	<link rel="canonical" href="{xen:link 'canonical:resources/history', $resource}" /></xen:container>
+
+<div class="discussionList section sectionMain">
+	<xen:if is="{$checkOuts}">
+		<table class="dataTable resourceHistory">
+			<tr class="dataRow">
+				<th class="type">{xen:phrase type}</th>
+				<th class="date">{xen:phrase date} ({xen:phrase th_due_date_rescheckinout})</th>
+				<th class="by">{xen:phrase th_by_rescheckinout}</th>
+				<th class="toFrom">{xen:phrase th_to_from_rescheckinout}</th>
+				<th class="condition">{xen:phrase th_condition_rescheckinout}</th>
+				<th class="location">{xen:phrase th_location_rescheckinout}</th>
+				<th class="fee">{xen:phrase th_fee_rescheckinout} ({xen:phrase th_payment_method_rescheckinout})</th>
+				<th class="deposit">{xen:phrase th_deposit_rescheckinout} ({xen:phrase th_payment_method_rescheckinout})</th>
+			</tr>
+			<xen:foreach loop="$checkOuts" value="$checkOut">
+				<xen:if is="{$checkOut.check_in_user_id}">
+					<tr class="dataRow">
+						<td class="type">{xen:phrase th_check_in_rescheckinout}</td>
+						<td class="date">{$checkOut.check_in_date}</td>
+						<td class="by">{xen:helper username, {xen:array "user_id={$checkOut.check_in_user_id}", "username={$checkOut.check_in_username}"}}</td>
+						<td class="toFrom">{xen:helper username, {xen:array "user_id={$checkOut.check_in_from_user_id}", "username={$checkOut.check_in_from_username}"}}</td>
+						<td class="condition">{$checkOut.check_in_condition_title}</td>
+						<td class="location">{$checkOut.check_in_location_title}</td>
+						<td class="fee">{xen:phrase n_a}</td>
+						<td class="deposit">{xen:number {$checkOut.check_in_deposit_amount}, 2} USD ({$checkOut.check_in_deposit_refund_method_title})</td>
+					</tr>
+				</xen:if>
+				<tr class="dataRow">
+					<td class="type">{xen:phrase th_check_out_rescheckinout}</td>
+					<td class="date">{$checkOut.check_out_date} ({$checkOut.check_out_due_date})</td>
+					<td class="by">{xen:helper username, {xen:array "user_id={$checkOut.check_out_user_id}", "username={$checkOut.check_out_username}"}}</td>
+					<td class="toFrom">{xen:helper username, {xen:array "user_id={$checkOut.check_out_to_user_id}", "username={$checkOut.check_out_to_username}"}}</td>
+					<td class="condition">{$checkOut.check_out_condition_title}</td>
+					<td class="location">{$checkOut.check_out_location_title}</td>
+					<td class="fee">{xen:number {$checkOut.check_out_fee_amount}, 2} USD ({$checkOut.check_out_fee_payment_method_title})</td>
+					<td class="deposit">{xen:number {$checkOut.check_out_deposit_amount}, 2} USD ({$checkOut.check_out_deposit_payment_method_title})</td>
+				</tr>
+			</xen:foreach>
+		</table>
+	<xen:else />
+		<div class="primaryContent">{xen:phrase th_there_no_check_ins_or_outs_to_display_rescheckinout}</div>
+	</xen:if>
+	
+	<xen:require css="discussion_list.css" />
+	<xen:require js="js/xenforo/discussion_list.js" />
+	
+	<h3 id="DiscussionListOptionsHandle" class="JsOnly"><a href="#">{xen:phrase th_check_ins_and_outs_display_options_rescheckinout}</a></h3>
+	
+	<form action="{xen:link 'resources/check-ins-and-outs', $resource}" method="post" class="DiscussionListOptions secondaryContent">
+		<div class="controlGroup">
+			<label for="ctrl_search_type">{xen:phrase th_show_only_check_ins_and_outs_rescheckinout}:</label>
+			<select name="search_type" id="ctrl_search_type" class="textCtrl">
+				<option value="">({xen:phrase th_show_all_check_ins_and_outs_rescheckinout})</option>
+				<option value="checked_out_by" {xen:selected "{$search_type} == 'checked_out_by'"}>{xen:phrase th_checked_out_by_rescheckinout}</option>
+				<option value="checked_out_to" {xen:selected "{$search_type} == 'checked_out_to'"}>{xen:phrase th_checked_out_to_rescheckinout}</option>
+				<option value="checked_in_by" {xen:selected "{$search_type} == 'checked_in_by'"}>{xen:phrase th_checked_in_by_rescheckinout}</option>
+				<option value="checked_in_from" {xen:selected "{$search_type} == 'checked_in_from'"}>{xen:phrase th_checked_in_from_rescheckinout}</option>
+			</select>
+			<input type="search" name="search_user" value="{$search_user}" placeholder="{xen:phrase user_name}..."
+				results="0" class="textCtrl AutoComplete AcSingle"
+				data-acurl="{xen:link resources/find-check-ins-and-outs-user, $resource}" data-acextrafields="#ctrl_search_type" />
+		</div>
+		
+		<div class="buttonGroup">
+			<input type="submit" class="button primary" value="{xen:phrase set_options}" />
+			<input type="reset" class="button" value="{xen:phrase cancel}" />
+		</div>
+	
+		<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+	</form>
+	
+</div>
+
+<div class="pageNavLinkGroup afterDiscussionListHandle">
+	<xen:pagenav link="{xen:link resource/check-ins-and-outs, $resource}" page="{$page}" perpage="{$perPage}" total="{$totalCheckOuts}" linkparams="{$pageNavParams}" />
+</div>]]></template>
+    <template title="th_resource_check_in_rescheckinout" version_id="1423155128" version_string="1.0.0"><![CDATA[<xen:title>{xen:helper resourcePrefix, $resource, escaped}{xen:phrase th_check_in_resource_rescheckinout}: {$resource.title}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb source="$categoryBreadcrumbs" />
+	<xen:breadcrumb href="{xen:link full:resources, $resource}">{xen:helper resourcePrefix, $resource}{$resource.title}</xen:breadcrumb>
+</xen:navigation>
+
+<form action="{xen:link 'resources/save-check-in', $resource, 'resource_check_out_id={$checkOut.resource_check_out_id}'}" method="post" class="xenForm formOverlay AutoValidator" data-redirect="on">
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_in_from_username">{xen:phrase th_checked_in_from_rescheckinout}:</label></dt>
+		<dd><input type="text" name="check_in_from_username" id="ctrl_check_in_from_username" class="textCtrl AutoComplete AcSingle" value="{$checkOut.check_in_from_username}" /></dd>
+	</dl>
+	
+	<xen:if is="{$canChangeCheckInOutUser}">
+		<dl class="ctrlUnit">
+			<dt><label for="ctrl_check_in_username">{xen:phrase th_checked_in_by_rescheckinout}:</label></dt>
+			<dd><input type="text" name="check_in_username" id="ctrl_check_in_username" class="textCtrl AutoComplete AcSingle" value="{$checkOut.check_in_username}" /></dd>
+		</dl>
+	</xen:if>
+		
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_in_date">{xen:phrase th_check_in_date_rescheckinout}:</label></dt>
+		<dd><input type="date" name="check_in_date" id="ctrl_check_in_date" class="textCtrl" value="{$checkOut.check_in_date}" /></dd>
+	</dl>
+
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_in_location_{xen:if {$locations}, 'id', 'title'}">{xen:phrase th_check_in_location_rescheckinout}:</label></dt>
+		<dd>
+			<xen:if is="{$locations}">
+				<select name="check_in_location_id" id="ctrl_check_in_location_id" class="textCtrl">
+					<xen:foreach loop="$locations" key="$locationId" value="$location">
+						<option value="{$locationId}"{xen:selected '{$checkOut.check_in_location_id} == {$locationId}'}>{$location.title}</option>
+					</xen:foreach>
+				</select>
+			<xen:else />
+				<input type="textbox" name="check_in_location_title" value="{$checkOut.check_in_location_title}" class="textCtrl" />
+			</xen:if>
+		</dd>
+	</dl>
+	
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_in_condition_id">{xen:phrase th_resource_condition_rescheckinout}:</label></dt>
+		<dd><select name="check_in_condition_id" id="ctrl_check_in_condition_id" class="textCtrl">
+			<xen:foreach loop="$conditions" key="$conditionId" value="$condition">
+				<option value="{$conditionId}"{xen:selected '{$checkOut.check_in_condition_id} == {$conditionId}'}>{$condition.title}</option>
+			</xen:foreach>
+		</select></dd>
+	</dl>
+		
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_in_deposit_refund_amount">{xen:phrase th_deposit_refund_amount_rescheckinout}:</label></dt>
+		<dd>
+			<input type="text" name="check_in_deposit_refund_amount" value="{$checkOut.check_in_deposit_refund_amount}" size="3" class="textCtrl" id="ctrl_check_in_deposit_refund_amount">
+			<select name="check_in_deposit_refund_currency" class="textCtrl autoSize" id="ctrl_check_in_deposit_refund_currency">
+				<option value="usd">USD</option>
+			</select>
+		</dd>
+	</dl>
+	
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_in_deposit_refund_method_id">{xen:phrase th_deposit_refund_method_rescheckinout}:</label></dt>
+		<dd><select name="check_in_deposit_refund_method_id" id="ctrl_check_in_deposit_refund_method_id" class="textCtrl">
+			<xen:foreach loop="$refundMethods" key="$refundMethodId" value="$refundMethod">
+				<option value="{$refundMethodId}"{xen:selected '{$checkOut.check_in_deposit_refund_method_id} == {$refundMethodId}'}>{$refundMethod.title}</option>
+			</xen:foreach>
+		</select></dd>
+	</dl>
+	
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd><input type="submit" name="save" value="{xen:phrase th_check_in_resource_rescheckinout}" accesskey="s" class="button primary" /></dd>
+	</dl>
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>]]></template>
+    <template title="th_resource_check_outs_view_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[<xen:title>{xen:phrase th_resources_checked_out_by_x_rescheckinout, 'name={$user.username}'}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:link full:resources/check-outs}">{xen:phrase th_check_outs_rescheckinout}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:container var="$head.openGraph">
+	<xen:include template="open_graph_meta">
+		<xen:set var="$url">{xen:link canonical:resources/check-outs, $user}</xen:set>
+		<xen:set var="$title">{xen:phrase th_resources_checked_out_by_x_rescheckinout, 'name={$user.username}'}</xen:set>
+	</xen:include>
+</xen:container>
+
+<xen:require css="resource_list.css" />
+
+<div class="section">
+	<form action="{xen:link resources/inline-mod/switch}" method="post"
+		class="InlineModForm"
+		data-cookieName="resources"
+		data-controls="#InlineModControls"
+		data-imodOptions="#ModerationSelect option">
+	
+		<xen:if is="{$canChangeCheckInOutUser} && {$user.user_id} != {$visitor.check_in_out_user_id_th}">
+			<div class="pageNavLinkGroup">
+				<div class="linkGroup">
+					<a href="{xen:link resources/check-outs/check-in-out-as-user, $user}" class="OverlayTrigger">{xen:phrase th_check_in_and_out_as_x_rescheckinout, 'name={$user.username}'}</a>
+				</div>
+			</div>
+		</xen:if>
+	
+		<xen:if is="{$resources}">
+			<ol class="resourceList">
+				<xen:foreach loop="$resources" value="$resource">
+					<xen:include template="resource_list_item">
+						<xen:set var="$showCategoryTitle">1</xen:set>
+						<xen:set var="$showIgnored">1</xen:set>
+						<xen:set var="$hideInlineMod">{$fromProfile}</xen:set>
+						<xen:set var="$listItemExtraHtml"><xen:include template="th_resource_list_item_extra_rescheckinout" /></xen:set>
+					</xen:include>
+				</xen:foreach>
+			</ol>
+		<xen:else />
+			{xen:phrase th_user_has_not_checked_out_any_resources_rescheckinout}
+		</xen:if>
+			
+		<div class="pageNavLinkGroup">
+			<xen:if is="{$inlineModOptions} AND !{$fromProfile}"><div class="linkGroup InlineMod SelectionCountContainer"></div></xen:if>
+			<xen:pagenav link="resources/check-outs" linkdata="{$user}" page="{$page}" perpage="{$perPage}" total="{$aggregate.total_resources}" />
+		</div>
+
+		<xen:if is="{$inlineModOptions} AND !{$fromProfile}">
+			<xen:include template="inline_mod_controls_resource" />
+		</xen:if>
+	</form>
+
+</div>
+
+<xen:sidebar>
+
+	<div class="section">
+		<div class="secondaryContent statsList" id="authorStats">
+			<h3>{xen:phrase th_user_details_rescheckinout}</h3>
+			<div class="pairsJustified">
+				<dl class="userName"><dt>{xen:phrase user}:</dt>
+					<dd><xen:username user="$user" /></dd></dl>
+			</div>
+		</div>
+	</div>
+
+	<xen:include template="sidebar_share_page">
+		<xen:set var="$url">{xen:link canonical:resources/check-outs, $user}</xen:set>
+	</xen:include>
+
+</xen:sidebar>]]></template>
+    <template title="th_resource_check_out_rescheckinout" version_id="1423155128" version_string="1.0.0"><![CDATA[<xen:title>{xen:helper resourcePrefix, $resource, escaped}{xen:phrase th_check_out_resource_rescheckinout}: {$resource.title}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb source="$categoryBreadcrumbs" />
+	<xen:breadcrumb href="{xen:link full:resources, $resource}">{xen:helper resourcePrefix, $resource}{$resource.title}</xen:breadcrumb>
+</xen:navigation>
+
+<form action="{xen:link 'resources/save-check-out', $resource}" method="post" class="xenForm formOverlay AutoValidator" data-redirect="on">
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_out_to_username">{xen:phrase th_checked_out_to_rescheckinout}:</label></dt>
+		<dd><input type="text" name="check_out_to_username" id="ctrl_check_out_to_username" class="textCtrl AutoComplete AcSingle" value="{$checkOut.check_out_to_username}" /></dd>
+	</dl>
+	
+	<xen:if is="{$canChangeCheckInOutUser}">
+		<dl class="ctrlUnit">
+			<dt><label for="ctrl_check_out_username">{xen:phrase th_checked_out_by_rescheckinout}:</label></dt>
+			<dd><input type="text" name="check_out_username" id="ctrl_check_out_username" class="textCtrl AutoComplete AcSingle" value="{$checkOut.check_out_username}" /></dd>
+		</dl>
+	</xen:if>
+		
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_out_date">{xen:phrase th_check_out_date_rescheckinout}:</label></dt>
+		<dd><input type="date" name="check_out_date" id="ctrl_check_out_date" class="textCtrl" value="{$checkOut.check_out_date}" /></dd>
+	</dl>
+
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_out_due_date">{xen:phrase th_due_date_rescheckinout}:</label></dt>
+		<dd><input type="date" name="check_out_due_date" id="ctrl_check_out_due_date" class="textCtrl" value="{$checkOut.check_out_due_date}" /></dd>
+	</dl>
+	
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_out_location_{xen:if {$locations}, 'id', 'title'}">{xen:phrase th_check_out_location_rescheckinout}:</label></dt>
+		<dd>
+			<xen:if is="{$locations}">
+				<select name="check_out_location_id" id="ctrl_check_out_location_id" class="textCtrl">
+					<xen:foreach loop="$locations" key="$locationId" value="$location">
+						<option value="{$locationId}"{xen:selected '{$checkOut.check_out_location_id} == {$locationId}'}>{$location.title}</option>
+					</xen:foreach>
+				</select>
+			<xen:else />
+				<input type="textbox" name="check_out_location_title" value="{$checkOut.check_out_location_title}" class="textCtrl" />
+			</xen:if>
+		</dd>
+	</dl>
+	
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_out_condition_id">{xen:phrase th_resource_condition_rescheckinout}:</label></dt>
+		<dd><select name="check_out_condition_id" id="ctrl_check_out_condition_id" class="textCtrl">
+			<xen:foreach loop="$conditions" key="$conditionId" value="$condition">
+				<option value="{$conditionId}"{xen:selected '{$checkOut.check_out_condition_id} == {$conditionId}'}>{$condition.title}</option>
+			</xen:foreach>
+		</select></dd>
+	</dl>
+	
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_out_fee_amount">{xen:phrase th_fee_amount_rescheckinout}:</label></dt>
+		<dd>
+			<input type="text" name="check_out_fee_amount" value="{$checkOut.check_out_fee_amount}" size="3" class="textCtrl" id="ctrl_check_out_fee_amount">
+			<select name="check_out_fee_currency" class="textCtrl autoSize" id="ctrl_check_out_fee_currency">
+				<option value="usd">USD</option>
+			</select>
+		</dd>
+	</dl>
+	
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_out_fee_payment_method_id">{xen:phrase th_fee_payment_method_rescheckinout}:</label></dt>
+		<dd><select name="check_out_fee_payment_method_id" id="ctrl_check_out_fee_payment_method_id" class="textCtrl">
+			<xen:foreach loop="$paymentMethods" key="$paymentMethodId" value="$paymentMethod">
+				<option value="{$paymentMethodId}"{xen:selected '{$checkOut.check_out_fee_payment_method_id} == {$paymentMethodId}'}>{$paymentMethod.title}</option>
+			</xen:foreach>
+		</select></dd>
+	</dl>
+	
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_out_deposit_amount">{xen:phrase th_deposit_amount_rescheckinout}:</label></dt>
+		<dd>
+			<input type="text" name="check_out_deposit_amount" value="{$checkOut.check_out_deposit_amount}" size="3" class="textCtrl" id="ctrl_check_out_deposit_amount">
+			<select name="check_out_deposit_currency" class="textCtrl autoSize" id="ctrl_check_out_deposit_currency">
+				<option value="usd">USD</option>
+			</select>
+		</dd>
+	</dl>
+	
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_check_out_deposit_payment_method_id">{xen:phrase th_deposit_payment_method_rescheckinout}:</label></dt>
+		<dd><select name="check_out_deposit_payment_method_id" id="ctrl_check_out_deposit_payment_method_id" class="textCtrl">
+			<xen:foreach loop="$paymentMethods" key="$paymentMethodId" value="$paymentMethod">
+				<option value="{$paymentMethodId}"{xen:selected '{$checkOut.check_out_deposit_payment_method_id} == {$paymentMethodId}'}>{$paymentMethod.title}</option>
+			</xen:foreach>
+		</select></dd>
+	</dl>
+	
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd><input type="submit" name="save" value="{xen:phrase th_check_out_resource_rescheckinout}" accesskey="s" class="button primary" /></dd>
+	</dl>
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>]]></template>
+    <template title="th_resource_list_item_extra_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[<xen:if is="{$resource.showCheckOut}">
+	<xen:require css="th_resource_list_item_rescheckinout.css" />
+	<xen:if is="{$resource.check_out_user_id} != {$user.user_id}">
+		<span class="extraBlock">{xen:phrase th_checked_out_by_x_rescheckinout, 'name={xen:helper username, {xen:array "user_id={$resource.check_out_user_id}", "username={$resource.check_out_username}"}}'}</span>
+	<xen:elseif is="{$resource.check_out_to_user_id} != {$user.user_id}" />
+		<span class="extraBlock">{xen:phrase th_checked_out_to_x_rescheckinout, 'name={xen:helper username, {xen:array "user_id={$resource.check_out_to_user_id}", "username={$resource.check_out_to_username}"}}'}</span>
+	</xen:if>
+	<xen:if is="{$resource.check_in_user_id}">
+		<xen:if is="{$resource.check_in_user_id} != {$user.user_id}">
+			<span class="extraBlock">{xen:phrase th_checked_in_by_x_rescheckinout, 'name={xen:helper username, {xen:array "user_id={$resource.check_in_user_id}", "username={$resource.check_in_username}"}}'}</span>
+		<xen:elseif is="{$resource.check_in_from_user_id} != {$user.user_id}" />
+			<span class="extraBlock">{xen:phrase th_checked_in_from_x_rescheckinout, 'name={xen:helper username, {xen:array "user_id={$resource.check_in_from_user_id}", "username={$resource.check_in_from_username}"}}'}</span>
+		</xen:if>
+	<xen:else />
+		<xen:if is="{$resource.canCheckIn}">
+			<a href="{xen:link resources/check-in, {$resource}, 'resource_check_out_id={$resource.last_check_out_id}'}" class="extraBlock button OverlayTrigger">{xen:phrase th_check_in_rescheckinout}</a>
+		</xen:if>
+	</xen:if>
+</xen:if>]]></template>
+    <template title="th_resource_list_item_rescheckinout.css" version_id="1422894127" version_string="1.0.0"><![CDATA[body .muted a.extraBlock {
+	color: {xen:property button.color};
+}
+
+.resourceListItem .main .extra .extraBlock {
+	display: block;
+	white-space: nowrap;
+	float: right;
+	clear: both;
+	margin-bottom: 5px;
+}]]></template>
+    <template title="th_resource_view_controls_rescheckinout" version_id="1422894127" version_string="1.0.0"><![CDATA[<xen:if is="{$resource.canCheckOut}">
+	<li><a href="{xen:link resources/check-out, $resource}" class="OverlayTrigger"><span>{xen:phrase th_check_out_resource_rescheckinout}</span></a></li>
+<xen:elseif is="{$resource.canCheckIn}" />
+	<li><a href="{xen:link resources/check-in, $resource, 'resource_check_out_id={$resource.last_check_out_id}'}" class="OverlayTrigger"><span>{xen:phrase th_check_in_resource_rescheckinout}</span></a></li>
+</xen:if>]]></template>
+  </templates>
+  <public_template_modifications>
+    <modification template="footer" modification_key="th_copyrightNotice_resCheckInOut" description="Copyright notice for [⌂] Resource Check In and Out" execution_order="1" enabled="1" action="callback">
+      <find><![CDATA[/{xen:phrase (?:xenforo|extra)_copyright}/]]></find>
+      <replace><![CDATA[ThemeHouse_Listener_InitDependencies::copyrightNotice]]></replace>
+    </modification>
+    <modification template="footer" modification_key="th_footer_resCheckInOut" description="Adds 'check in and out as...' chooser." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<xen:if is="{\$canChangeStyle} OR {\$canChangeLanguage}.*)(">\s*<dl class="choosers">.*)(</dl>)#Us]]></find>
+      <replace><![CDATA[${1} OR {$canChangeCheckInOutUser}${2}
+<xen:if is="{$canChangeCheckInOutUser}">
+	<dt>{xen:phrase th_check_in_and_out_as_rescheckinout}</dt>
+	<dd><a href="{xen:link 'resources/check-outs/check-in-out-as-user', '', 'redirect={$requestPaths.requestUri}'}" class="OverlayTrigger Tooltip" title="{xen:phrase th_check_in_and_out_as_user_chooser_rescheckinout}" rel="nofollow">{$visitor.check_in_out_username}</a></dd>
+</xen:if>
+${3}]]></replace>
+    </modification>
+    <modification template="member_view" modification_key="th_memberView_resCheckInOut" description="Add 'Check Outs' tab." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<xen:hook name="member_view_tabs_heading"[^>]*>)(.*<xen:hook name="member_view_tabs_content"[^>]*>)#Us]]></find>
+      <replace><![CDATA[${1}
+<li><a href="{$requestPaths.requestUri}#checkOuts">{xen:phrase th_check_outs_rescheckinout}</a></li>
+${2}
+<li id="checkOuts" class="profileContent" data-loadUrl="{xen:link resources/check-outs, $user, 'profile=1'}">
+	{xen:phrase loading}...
+	<noscript><a href="{xen:link resources/check-outs, $user}">{xen:phrase view}</a></noscript>
+</li>]]></replace>
+    </modification>
+    <modification template="resource_add" modification_key="th_resourceAdd_resCheckInOut" description="Adds condition text field to resource editor." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<label for="ctrl_tag_line">.*)(</fieldset>)#Us]]></find>
+      <replace><![CDATA[${1}
+<dl class="ctrlUnit">
+	<dt><label for="ctrl_resource_condition_id">{xen:phrase th_resource_condition_rescheckinout}:</label></dt>
+	<dd>
+		<select name="resource_condition_id" class="textCtrl" id="ctrl_resource_condition_id">
+			<option value="0"{xen:selected '!{$resource.condition_id_th}'}></option>
+			<xen:foreach loop="$conditions" key="$conditionId" value="$condition">
+				<option value="{$conditionId}"{xen:selected '{$conditionId} == {$resource.condition_id_th}'}>{$condition.title}</option>
+			</xen:foreach>
+		</select>
+		<input type="hidden" name="resource_condition_id_shown" value="1" />
+	</dd>
+</dl>
+${2}]]></replace>
+    </modification>
+    <modification template="resource_view" modification_key="th_resourceViewInfo_resCheckInOut" description="Adds details to information block." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#<dl class="author">.*</dl>#Us]]></find>
+      <replace><![CDATA[${0}
+<dl class="availability"><dt>{xen:phrase th_availability_rescheckinout}:</dt>
+	<xen:if is="{$resource.check_in_user_id} || !{$resource.check_out_user_id}">
+		<dd>{xen:phrase th_available_rescheckinout}</dd>
+	<xen:else />
+		<dd>{xen:phrase th_unavailable_rescheckinout}</dd>
+	</xen:if>
+</dl>
+<xen:if is="{$resource.condition_title}">
+	<dl class="condition"><dt>{xen:phrase th_resource_condition_rescheckinout}:</dt>
+		<dd>{$resource.condition_title}</dd>
+	</dl>
+</xen:if>]]></replace>
+    </modification>
+    <modification template="resource_view_tabs" modification_key="th_resourceViewTabs_resCheckInOut" description="Adds 'Check Outs' tab" execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<xen:hook name="resource_view_tabs".*)(</xen:hook>)#Us]]></find>
+      <replace><![CDATA[${1}
+<xen:if is="{$canViewCheckInsAndOuts}"><li class="resourceTabCheckInsAndOuts {xen:if "{$selectedTab} == 'check_ins_and_outs'", active}">
+	<a href="{xen:link resources/check-ins-and-outs, $resource}">{xen:phrase th_check_ins_and_outs_rescheckinout}</a>
+</li></xen:if>
+${2}]]></replace>
+    </modification>
+    <modification template="resource_view" modification_key="th_resourceView_resCheckInOut" description="Adds &quot;check out&quot; or &quot;check in&quot; link." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<xen:hook name="resource_controls".*)(</xen:hook>)#Us]]></find>
+      <replace><![CDATA[${1}
+<xen:include template="th_resource_view_controls_rescheckinout" />
+${2}]]></replace>
+    </modification>
+    <modification template="search_form_tabs" modification_key="th_searchFormTabs_resCheckInOut" description="Adds 'Check Outs' to search form." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<xen:hook name="search_form_tabs">.*)(</xen:hook>)#Us]]></find>
+      <replace><![CDATA[${1}
+<li{xen:if "{$searchType} == 'resource_check_out'", ' class="active"'}><a href="{xen:link search, '', 'type=resource_check_out'}">{xen:phrase th_search_check_outs_rescheckinout}</a></li>
+${2}]]></replace>
+    </modification>
+  </public_template_modifications>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>
